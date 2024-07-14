@@ -5,23 +5,8 @@ from time import perf_counter
 import structlog
 from win32com.client import Dispatch
 
-from database import (
-    Analysis,
-    Layer,
-    LayerYearLoss,
-    ModelFile,
-    ResultInstance,
-    ResultLayer,
-    ResultLayerReinstatement,
-    ResultLayerStatisticLoss,
-    Session,
-)
 from engine.function_poisson_pareto import get_poisson_pareto_ylt
-from engine.function_resultlayerstatisticloss import get_df_resultlayerstatisticloss
 from utils import (
-    df_from_listobject,
-    read_from_listobject_and_save,
-    write_df_in_listobjects,
     write_df_in_listobjects_simple,
 )
 

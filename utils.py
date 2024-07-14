@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Type, TypeVar
 
 import pandas as pd
 from sqlalchemy import select
@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session
 from win32com.client import CDispatch
 
 from database import Base
+
+# Create a generic type T indicating that the function can return any type
+T = TypeVar("T")
 
 
 def df_from_listobject(listobject: CDispatch) -> pd.DataFrame:
@@ -112,6 +115,35 @@ def write_df_in_listobjects(
         ws_output.Range(cell_start, cell_end).Value = df_output.values
 
     return None
+
+
+def get_single_result(session: Session, DbModel: Type[T], object_id: int) -> T:
+    """
+    Execute a query to get a single result based on the object_id, raising an error if not found or multiple results are found.
+
+    :param session: The SQLAlchemy session used to execute the query.
+    :param DbModel: The SQLAlchemy ORM model to query, which is of type T (Type[T])
+    :param object_id: The ID of the object to query.
+    :return: The single result of the query which is an instance of type T.
+    :raise ValueError: If no result is found, multiple results are found, or the model does not have an 'id' attribute.
+    """
+    if not hasattr(DbModel, "id"):
+        raise ValueError(f"Model {DbModel.__name__} doesn't have an 'id' attribute")
+
+    query = select(DbModel).where(DbModel.id == object_id)  # type: ignore[attr-defined]
+    try:
+        result = session.execute(query).scalar_one()
+        if not isinstance(result, DbModel):
+            raise ValueError(
+                f"Expected instance of {DbModel.__name__}, got {type(result).__name__}"
+            )
+        return result
+    except NoResultFound:
+        raise ValueError(f"No result found for {DbModel.__name__} with id {object_id}")
+    except MultipleResultsFound:
+        raise ValueError(
+            f"Multiple results found for {DbModel.__name__} with id {object_id}"
+        )
 
 
 """

@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 from time import perf_counter
 
+import structlog
 from win32com.client import Dispatch
 
 from database import (
@@ -18,9 +19,12 @@ from database import (
 from engine.function_burningcost import get_df_burningcost
 from utils import (
     df_from_listobject,
+    get_single_result,
     read_from_listobject_and_save,
     write_df_in_listobjects,
 )
+
+log = structlog.get_logger()
 
 # --------------------------------------
 # Step 1: Open the Excel file
@@ -74,14 +78,22 @@ start = perf_counter()
 with Session.begin() as session:
     analysis = session.get(Analysis, analysis_id)
 
+    if analysis is None:
+        log.error(f"Analysis with id {analysis_id} not found")
+        raise ValueError(f"Analysis with id {analysis_id} not found")
+
     # Delete the previous relationships between layers and premiumfiles
     for layer in analysis.layers:
         layer.premiumfiles.clear()
 
     # Create and save the new relationships between layers and premiumfiles
     for _, row in df_layer_premiumfile.iterrows():
-        layer = session.get(Layer, row["layer_id"])
-        premiumfile = session.get(PremiumFile, row["premiumfile_id"])
+        layer_id = int(row["layer_id"])
+        layer = get_single_result(session, Layer, layer_id)
+
+        premiumfile_id = int(row["premiumfile_id"])
+        premiumfile = get_single_result(session, PremiumFile, premiumfile_id)
+
         layer.premiumfiles.append(premiumfile)
 
     # Delete the previous relationships between layers and histolossfiles
@@ -90,8 +102,12 @@ with Session.begin() as session:
 
     # Create and save the new relationships between layers and histolossfiles
     for _, row in df_layer_histolossfile.iterrows():
-        layer = session.get(Layer, row["layer_id"])
-        histolossfile = session.get(HistoLossFile, row["histolossfile_id"])
+        layer_id = int(row["layer_id"])
+        layer = get_single_result(session, Layer, layer_id)
+
+        histolossfile_id = int(row["histolossfile_id"])
+        histolossfile = get_single_result(session, HistoLossFile, histolossfile_id)
+
         layer.histolossfiles.append(histolossfile)
 
     # Delete the previsous burning costs
