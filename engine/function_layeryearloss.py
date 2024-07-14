@@ -532,10 +532,11 @@ def get_table_layeryearloss_statistics(
             max_gross_by_year, exit_loss
         )
 
-    table = table.sort_index(axis=1)  # Order the columns alphabetically
-    table = table.reset_index().rename(
-        columns={"index": "statistic"}
-    )  # Convert the index into a regular column 'statistic'
+    # Order the columns alphabetically
+    table = table.sort_index(axis=1)
+
+    # Convert the index into a regular column 'statistic'
+    table = table.reset_index().rename(columns={"index": "statistic"})
 
     return table
 
