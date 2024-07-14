@@ -2,6 +2,7 @@ from typing import Type, TypeVar
 
 import pandas as pd
 from sqlalchemy import select
+from sqlalchemy.exc import MultipleResultsFound, NoResultFound
 from sqlalchemy.orm import Session
 from win32com.client import CDispatch
 
