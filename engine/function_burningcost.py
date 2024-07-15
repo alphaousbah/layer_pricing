@@ -352,7 +352,7 @@ def get_table_layerburningcost(df_layerburningcost: pd.DataFrame) -> pd.DataFram
     )
 
     # Flatten the multi-level columns names
-    table.columns = ["_".join(col_name) for col_name in table.columns.values]
+    table.columns = pd.Index(["_".join(col_name) for col_name in table.columns.values])
 
     # Reset the index to convert the 'year' index into a regular column
     table = table.reset_index()
