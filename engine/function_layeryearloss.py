@@ -562,7 +562,6 @@ def get_return_period(series: pd.Series, value: float) -> float:  # type: ignore
 
     The return period is defined as the inverse of the exceedance probability.
     This function computes the exceedance probability using the inverse quantile
-
     method and then calculates the return period.
 
     :param series: The Pandas Series for which to calculate the return period.
