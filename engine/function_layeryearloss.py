@@ -480,16 +480,7 @@ def get_table_layeryearloss_statistics(
             df_layeryearloss["layer_id"] == source_layer_id
         ]
 
-        def complete_years(series: pd.Series, simulated_years: int) -> pd.Series:  # type: ignore[type-arg]
-            """
-            Ensure the series includes all years up to simulated_years, filling missing years with zero.
-
-            :param series: The Pandas Series to be reindexed. The index should represent years.
-            :param simulated_years: The total number of simulated years.
-            :return: A reindexed Pandas Series with missing years filled with zero.
-            """
-            return series.reindex(range(simulated_years), fill_value=0)
-
+        # Calculate the data series used for statistical analysis
         sum_ceded_by_year = complete_years(
             df_layeryearloss_for_layer.groupby("year")["ceded"].sum(), simulated_years
         )
@@ -514,6 +505,7 @@ def get_table_layeryearloss_statistics(
             df_layeryearloss_for_layer.groupby("year")["gross"].max(), simulated_years
         )
 
+        # Calculate loss distribution statistics
         table.loc["expected_loss_occurence", resultlayer_name] = (
             max_ceded_by_year.mean()
         )
@@ -553,6 +545,17 @@ def get_table_layeryearloss_statistics(
     return table
 
 
+def complete_years(series: pd.Series, simulated_years: int) -> pd.Series:  # type: ignore[type-arg]
+    """
+    Ensure the series includes all years up to simulated_years, filling missing years with zero.
+
+    :param series: The Pandas Series to be reindexed. The index should represent years.
+    :param simulated_years: The total number of simulated years.
+    :return: A reindexed Pandas Series with missing years filled with zero.
+    """
+    return series.reindex(range(simulated_years), fill_value=0)
+
+
 def get_return_period(series: pd.Series, value: float) -> float:  # type: ignore[type-arg]
     """
     Calculate the return period for a given value in the series.
@@ -586,6 +589,7 @@ def inverse_quantile(series: pd.Series, value: float) -> float:  # type: ignore[
     :param series: The Pandas Series for which to calculate the CDF value.
     :param value: The value to find the CDF for.
     :return: The CDF value corresponding to the input value.
+    :raises ValueError: If the series is empty
     """
     # Ensure the series is not empty
     if series.empty:
